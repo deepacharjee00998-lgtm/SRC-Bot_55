@@ -1,6 +1,9 @@
+import os
 import logging
 import asyncio
 from datetime import datetime, timedelta
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import threading
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
 from pyrogram.errors import SessionPasswordNeeded, PhoneCodeInvalid
@@ -9,6 +12,21 @@ import config
 
 logging.basicConfig(level=logging.INFO)
 
+# 🌐 Dummy HTTP Server taaki Koyeb / Render Web Service port error na de
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Telegram Bot is active and running!")
+
+def run_server():
+    port = int(os.environ.get("PORT", 8000))
+    server = HTTPServer(("0.0.0.0", port), SimpleHandler)
+    server.serve_forever()
+
+# Server ko background thread mein start karein
+threading.Thread(target=run_server, daemon=True).start()
+
 app = Client(
     "restricted_content_bot",
     api_id=config.API_ID,
@@ -16,6 +34,7 @@ app = Client(
     bot_token=config.BOT_TOKEN
 )
 
+# MongoDB Connection
 db_client = AsyncIOMotorClient(config.MONGO_URI)
 db = db_client["restricted_bot_db"]
 users_col = db["users"]
@@ -282,9 +301,10 @@ async def admin_approval(client, query: CallbackQuery):
     else:
         await client.send_message(user_id, "❌ Maaf kijiye, aapka payment proof reject kar diya gaya hai.")
         if query.message.photo:
-            await query.message.edit_caption("❌ **Status: Rejected**")
+            await query.message.edit_caption("✅ **Status: Rejected**")
         else:
             await query.message.edit_text("❌ **Status: Rejected**")
 
 print("Bot is running...")
 app.run()
+            
