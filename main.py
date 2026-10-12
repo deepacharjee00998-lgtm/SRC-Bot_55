@@ -1,6 +1,12 @@
 import os
-import logging
 import asyncio
+
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
+import logging
 from datetime import datetime, timedelta
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
@@ -12,7 +18,7 @@ import config
 
 logging.basicConfig(level=logging.INFO)
 
-# 🌐 Dummy HTTP Server taaki Koyeb / Render Web Service port error na de
+# 🌐 Dummy HTTP Server taaki Render Web Service port error na de
 class SimpleHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -145,7 +151,7 @@ async def callback_handler(client, query: CallbackQuery):
         elif not user.get("destination_id"):
             await query.message.reply_text("⚠️ Pehle destination channel set karein. Command use karein: `/setchannel`")
         else:
-            await query.message.reply_text("✅ Sabhi setup ready hain! Ab jis restricted/private channel se content copy karna hai, uska post link yahan bhejein.")
+            await query.message.reply_text("✅ Sabhi setup ready hain! Ab jis restricted/private channel से content copy karna hai, uska post link yahan bhejein.")
             
     elif data == "back_home":
         is_logged = bool(user and user.get("session_string"))
@@ -307,4 +313,4 @@ async def admin_approval(client, query: CallbackQuery):
 
 print("Bot is running...")
 app.run()
-            
+    
